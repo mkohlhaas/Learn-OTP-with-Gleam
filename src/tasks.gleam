@@ -66,14 +66,13 @@ pub fn main() {
   case linear_freq == parallel_freq {
     True ->
       io.println(
-        "Our parallel and linear frequency functions produced the same output",
+        "Our parallel and linear frequency functions produced the same output.",
       )
     False ->
       io.println(
-        "Our parallel and linear frequency functions produced different output",
+        "Our parallel and linear frequency functions produced different output.",
       )
   }
-
   Ok(Nil)
 }
 
@@ -95,13 +94,15 @@ fn parallel_letter_frequency(
       task.async(fn() { linear_letter_frequency(chunk) })
     })
 
-  // Fold over the handles to the tasks to await their results
-  use total_freq_dict, partial_freq_handle <- list.fold(handles, dict.new())
-  let partial_freq_dict = task.await(partial_freq_handle, 1000)
-  use total_freq, letter, count <- dict.fold(partial_freq_dict, total_freq_dict)
-  use entry <- dict.update(total_freq, letter)
-  case entry {
-    Some(counter) -> counter + count
+  use freq_count_dict, handle <- list.fold(handles, dict.new())
+  let freq_count_dict_chunk = task.await(handle, 1000)
+  use freq_count_dict, letter, count <- dict.fold(
+    freq_count_dict_chunk,
+    freq_count_dict,
+  )
+  use val <- dict.update(freq_count_dict, letter)
+  case val {
+    Some(v) -> v + count
     None -> count
   }
 }
